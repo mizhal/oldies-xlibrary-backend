@@ -35,7 +35,7 @@ class PDFFileMapper:
 		
 	def loadOne(self, fname):
 		new = PDF()
-		new.fname = decode(abspath(fname))
+		new.fname = abspath(fname)
 		metadata = self.parseMetadata(fname)
 		
 		new.title = metadata.get("title", u"")
