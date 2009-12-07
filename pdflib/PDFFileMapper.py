@@ -3,6 +3,7 @@ Extractor de texto de PDF basado en pdftotext de XPDF,
 utilizando el binario mediante pipes.
 '''
 import re
+from exceptions import Exception
 from os.path import abspath, basename
 
 from PDF import PDF
@@ -13,6 +14,14 @@ RE_integer = re.compile("([0-9]+).*")
 
 import chardet
 
+class CannotDecode(Exception):
+	def __init__(self, text):
+		self.text = text
+		self.fname = ''
+		
+	def setFile(self, fname):
+		self.fname = fname
+
 def decode(text):
 	if isinstance(text, str):
 		q = chardet.detect(text)['encoding']
@@ -20,8 +29,10 @@ def decode(text):
 			return text.decode(q)
 		else:
 			return u''
-	else:
+	elif isinstance(text, unicode):
 		return text
+	else:
+		raise CannotDecode(text)
 
 class PDFFileMapper:
 	def __init__(self):
@@ -55,7 +66,7 @@ class PDFFileMapper:
 				new.file_size = -1
 		else:
 			new.file_size = -1
-		new.keywords = metadata.get("keywords", u"").split(" ")
+		new.keywords = metadata.get("keywords", u"")
 		new.subject = metadata.get("subject", u"")
 		z = metadata.get("pages", u"-1")
 		if z != '':
@@ -66,42 +77,47 @@ class PDFFileMapper:
 		########
 		## ajuste de codigos de caracteres
 		########
-		new.title = decode(new.title)
-		new.author = decode(new.author)
-		new.creator = decode(new.creator)
-		new.keywords = decode(new.keywords)
-		new.subject = decode(new.subject)
+		try:
+			new.title = decode(new.title)
+			new.author = decode(new.author)
+			new.creator = decode(new.creator)
+			new.keywords = decode(new.keywords).split(" ")
+			new.subject = decode(new.subject)
+		except CannotDecode, e:
+			e.setFile(fname)
+			raise e
 		
 		return new
 		
 	def loadMany(self, file_names):
 		res = []
 		for fname in file_names:
-			res.append(self.loadOne(fname))
+			new = self.loadOne(fname)
+			res.append(new)
 		
 		return res
 		
 	def extractText(self, pdf_object):
 		if not exists(pdf_object.fname):
 			raise "File '%s' not exists"%pdf_object.fname
-		pout, pin = popen2.popen2('%s "%s" -'%(pdf2textexe, pdf_object.fname))
-		return decode(pout.read())
+		pout, pin = popen2.popen2('%s "%s" -'%(pdf2textexe, to_console_encoding(pdf_object.fname)))
+		return decode_console_encoding(pout.read())
 		
 	def extractTextOfPage(self, pdf_object):
 		if not exists(pdf_object.fname):
 			raise "File '%s' not exists"%pdf_object.fname
-		pout, pin = popen2.popen2('%s -f %s -l %s "%s" -'%(pdf2textexe, page, page, pdf_object.fname))
-		return decode(pout.read())
+		pout, pin = popen2.popen2('%s -f %s -l %s "%s" -'%(pdf2textexe, page, page, to_console_encoding(pdf_object.fname)))
+		return decode_console_encoding(pout.read())
 		
 	def extractComments(self, fname):
-		pout, pin = popen2.popen2('%s "%s"'%(pdfextractcomment, fname))
-		return decode(pout.read())
+		pout, pin = popen2.popen2('%s "%s"'%(pdfextractcomment, to_console_encoding(fname)))
+		return decode_console_encoding(pout.read())
 		
 	def metadata(self, fname):
 		if not exists(fname):
 			raise "File '%s' not exists"%fname
-		pout, pin = popen2.popen2('%s "%s"'%(pdfinfo, fname))
-		return decode(pout.read())
+		pout, pin = popen2.popen2('%s "%s"'%(pdfinfo, to_console_encoding(fname)))
+		return decode_console_encoding(pout.read())
 		
 	def parseMetadata(self, fname):
 		''' extrae un diccionario (key - value)

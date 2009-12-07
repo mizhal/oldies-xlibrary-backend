@@ -1,8 +1,12 @@
 from os import walk
 from os.path import join
+import locale
+
 from exceptions import Exception
 
 from pdflib.PDFFileMapper import PDFFileMapper
+
+adapt_filename_encoding = lambda x: x.decode(locale.getpreferredencoding())
 
 class Library:
 	def __init__(self, backend = None):
@@ -10,6 +14,7 @@ class Library:
 		
 	def _scanDirectory(self, directory):
 		pdf_load = PDFFileMapper()
+		directory = adapt_filename_encoding(directory)
 		for root, dirs, files in walk(directory):
 			for i in files:
 				if i.upper().endswith(".PDF"):
@@ -28,11 +33,6 @@ class Library:
 			except StopIteration, e:
 				self.backend.saveMany(books)
 				break
-			except UnicodeDecodeError, e:
-				continue
-			except Exception, e:
-				print e
-				raise e
 	
 	def ls(self, page = -1):
 		if page == -1:

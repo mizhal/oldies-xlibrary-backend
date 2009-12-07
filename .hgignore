@@ -1,2 +1,4 @@
 glob:*.pyc
 glob:*.ini
+glob:*.dll
+glob:*.exe

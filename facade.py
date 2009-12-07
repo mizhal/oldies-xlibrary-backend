@@ -1,11 +1,11 @@
-from os.path import join, exists
+from os.path import split, join, exists
 
-import pysqlite2.dbapi2 as sqlite
+from apsw import Connection
 
 from pdflib.PDFSQliteMapper import PDFSQliteMapper
 from Library import Library
 
-subsystem_dir = join("/",*__file__.split("/")[:-1])
+subsystem_dir = join(split(__file__)[:-1])[0]
 
 class XLibrary:
 	def openLibrary(self):
@@ -13,8 +13,7 @@ class XLibrary:
 		config = IniFile(join(subsystem_dir, "config.ini"))
 		dbfile = config.get("storage.dbfile")
 		if not exists(dbfile):
-			con = sqlite.Connection(dbfile)
-			con.text_factory = str
+			con = Connection(dbfile)
 			PDFSQliteMapper.flyweight = con
 			ldr = PDFSQliteMapper()
 			ldr.createTable()
@@ -26,8 +25,7 @@ class XLibrary:
 			config.commit()
 			return lib
 		else:
-			con = sqlite.Connection(dbfile)
-			con.text_factory = str
+			con = Connection(dbfile)
 			PDFSQliteMapper.flyweight = con
 			ldr = PDFSQliteMapper()
 			if not ldr.verifySchema():
