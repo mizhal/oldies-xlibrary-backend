@@ -22,7 +22,25 @@ if osname == "Windows":
 elif osname == "Linux" :
 	pdf2textexe = "pdftotext"
 	pdfinfo = "pdfinfo"
-	decode_console_encoding = lambda x: x.decode(locale.getpreferredencoding())
-	to_console_encoding = lambda x: x.encode(locale.getpreferredencoding())
+	def A(x):
+		try:
+			return x.decode(locale.getpreferredencoding())
+		except UnicodeDecodeError, e:
+			return u"<Unicode Error>"
+		except UnicodeEncodeError, e:
+			return u"<Unicode Error>"
+	
+	decode_console_encoding = A
+		
+	def B(x):
+		try:
+			return x.decode(locale.getpreferredencoding())
+		except UnicodeDecodeError, e:
+			return u"<Unicode Error>"
+		except UnicodeEncodeError, e:
+			return u"<Unicode Error>"
+	
+	to_console_encoding = B
+	
 else:
 	raise "unkwown system"
