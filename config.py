@@ -8,6 +8,6 @@ if osname == "Windows":
 	adapt_name = lambda x:x
 elif osname == "Linux" :
 	adapt_filename_encoding = lambda x: x
-	adapt_name = lambda x: x.decode(locale.getpreferredencoding())
+	adapt_name = lambda x: x
 else:
 	raise "unkwown system"

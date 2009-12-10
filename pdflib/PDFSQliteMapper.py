@@ -82,7 +82,7 @@ class PDFSQliteMapper:
 		if pdf.id == -1:
 			for row in cur.execute(PDFSQliteMapper.INSERT_SQL , 
 					(pdf.title, 
-						pdf.fname,
+						buffer(pdf.fname),
 						pdf.author,
 						pdf.creator,
 						pdf.creation_date,
@@ -98,7 +98,7 @@ class PDFSQliteMapper:
 		else:
 			cur.execute(PDFSQliteMapper.UPDATE_SQL, 
 					(pdf.title, 
-						pdf.fname,
+						buffer(pdf.fname),
 						pdf.author,
 						pdf.creator,
 						pdf.creation_date,
@@ -119,7 +119,7 @@ class PDFSQliteMapper:
 			if pdf.id == -1:
 				for row in cur.execute(PDFSQliteMapper.INSERT_SQL , 
 					(pdf.title, 
-						pdf.fname,
+						buffer(pdf.fname),
 						pdf.author,
 						pdf.creator,
 						pdf.creation_date,
@@ -134,7 +134,7 @@ class PDFSQliteMapper:
 					pdf.id = row[0]
 			else:
 				updates.append(( pdf.title, 
-						pdf.fname,
+						buffer(pdf.fname),
 						pdf.author,
 						pdf.creator,
 						pdf.creation_date,
