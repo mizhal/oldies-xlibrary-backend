@@ -5,24 +5,16 @@ from exceptions import Exception
 
 from pdflib.PDFFileMapper import PDFFileMapper
 
-from config import adapt_filename_encoding, adapt_name
-
 class Library:
 	def __init__(self, backend = None):
 		self.backend = backend
 		
 	def _scanDirectory(self, directory):
 		pdf_load = PDFFileMapper()
-		directory = adapt_filename_encoding(directory)
 		for root, dirs, files in walk(directory):
 			for i in files:
 				if i.upper().endswith(".PDF"):
-					try:
-						unicode_name = adapt_name(join(root, i))
-					except:
-						## @todo LOG del fallo
-						continue
-					yield pdf_load.loadOne(unicode_name)
+					yield pdf_load.loadOne(join(root, i))
 		
 	def loadBooksFromDirectory(self, directory):
 		scanner = self._scanDirectory(directory)
