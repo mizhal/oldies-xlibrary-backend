@@ -1,8 +1,10 @@
 from PDF import PDF
 
+from apsw import Connection
+
 class PDFSQliteMapper:
 	''' '''
-	flyweight = None ## @note apunta al "singleton" de la conexion a la base de datos
+	filename = None
 	
 	FIELDS = '''id, 
 		title,
@@ -16,6 +18,9 @@ class PDFSQliteMapper:
 		subject,
 		pages,
 		has_text '''
+	
+	def __init__(self):
+		self.con = Connection(PDFSQliteMapper.filename)
 	
 	def createTable(self):
 		sql = '''create table pdfs(
@@ -32,17 +37,17 @@ class PDFSQliteMapper:
 			pages integer,
 			has_text integer
 		)'''
-		cur = PDFSQliteMapper.flyweight.cursor()
+		cur = self.con.cursor()
 		cur.execute(sql)
 		
 	def dropTable(self):
 		sql = '''drop table pdfs'''
-		cur = PDFSQliteMapper.flyweight.cursor()
+		cur = self.con.cursor()
 		cur.execute(sql)		
 		
 	def verifySchema(self):
 		sql = "select %s from pdfs"%PDFSQliteMapper.FIELDS
-		cur = PDFSQliteMapper.flyweight.cursor()
+		cur = self.con.cursor()
 		try:
 			cur.execute(sql)
 			return True
@@ -78,7 +83,7 @@ class PDFSQliteMapper:
 				where id = ?"""
 	
 	def save(self, pdf):
-		cur = PDFSQliteMapper.flyweight.cursor()
+		cur = self.con.cursor()
 		if pdf.id == -1:
 			for row in cur.execute(PDFSQliteMapper.INSERT_SQL , 
 					(pdf.title, 
@@ -113,7 +118,7 @@ class PDFSQliteMapper:
 				)
 		
 	def saveMany(self, pdfs):
-		cur = PDFSQliteMapper.flyweight.cursor()
+		cur = self.con.cursor()
 		updates = []
 		for pdf in pdfs:
 			if pdf.id == -1:
@@ -152,19 +157,19 @@ class PDFSQliteMapper:
 		
 	DELETE_SQL = '''delete from pdfs where id = ?'''
 	def delete(self, pdf):
-		cur = PDFSQliteMapper.flyweight.cursor()
+		cur = self.con.cursor()
 		cur.execute(PDFSQliteMapper.DELETE_SQL, (pdf.id,) ) 
 		pdf.id = -1
 		
 	def deleteMany(self, pdfs):
-		cur = PDFSQliteMapper.flyweight.cursor()
+		cur = self.con.cursor()
 		cur.executemany(PDFSQliteMapper.DELETE_SQL, 
 						[(pdf.id,) for pdf in pdfs]) 
 		for pdf in pdfs:
 			pdf.id = -1
 	
 	def _loadOne(self, sql):
-		cur = PDFSQliteMapper.flyweight.cursor()
+		cur = self.con.cursor()
 		cur.execute(sql)
 		row = cur.next()
 		
@@ -185,7 +190,7 @@ class PDFSQliteMapper:
 		return new
 		
 	def _loadMany(self, sql):
-		cur = PDFSQliteMapper.flyweight.cursor()
+		cur = self.con.cursor()
 		results = []
 		for row in cur.execute(sql):
 			new = PDF()

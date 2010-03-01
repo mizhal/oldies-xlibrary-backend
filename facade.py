@@ -1,7 +1,5 @@
 from os.path import split, join, exists
 
-from apsw import Connection
-
 from pdflib.PDFSQliteMapper import PDFSQliteMapper
 from Library import Library
 
@@ -13,8 +11,7 @@ class XLibrary:
 		config = IniFile(join(subsystem_dir, "config.ini"))
 		dbfile = config.get("storage.dbfile")
 		if not exists(dbfile):
-			con = Connection(dbfile)
-			PDFSQliteMapper.flyweight = con
+			PDFSQliteMapper.filename = dbfile
 			ldr = PDFSQliteMapper()
 			ldr.createTable()
 			lib = Library(PDFSQliteMapper())
@@ -25,8 +22,7 @@ class XLibrary:
 			config.commit()
 			return lib
 		else:
-			con = Connection(dbfile)
-			PDFSQliteMapper.flyweight = con
+			PDFSQliteMapper.filename = dbfile
 			ldr = PDFSQliteMapper()
 			if not ldr.verifySchema():
 				raise "Error: esquema no coincide"
@@ -46,5 +42,4 @@ class XLibrary:
 				raise "Error de configuracion created no es 1 o 0"
 			
 	def closeLibrary(self, lib):
-		PDFSQliteMapper.flyweight.close()
 		lib = None

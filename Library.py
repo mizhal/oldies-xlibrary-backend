@@ -4,10 +4,11 @@ from os.path import join
 from exceptions import Exception
 
 from pdflib.PDFFileMapper import PDFFileMapper
+from pdflib.PDFSQliteMapper import PDFSQliteMapper
 
 class Library:
 	def __init__(self, backend = None):
-		self.backend = backend
+		pass
 		
 	def _scanDirectory(self, directory):
 		pdf_load = PDFFileMapper()
@@ -18,34 +19,34 @@ class Library:
 		
 	def loadBooksFromDirectory(self, directory):
 		scanner = self._scanDirectory(directory)
-		
+		mapper = PDFSQliteMapper()
 		while True:
 			books = []
 			try:
 				for i in range(20):
 					pdf = scanner.next()
 					books.append(pdf)
-				self.backend.saveMany(books)
+				mapper.saveMany(books)
 			except StopIteration, e:
-				self.backend.saveMany(books)
+				mapper.saveMany(books)
 				break
 	
 	def ls(self, page = -1):
 		if page == -1:
-			for pdf in self.backend.loadAll():
+			for pdf in PDFSQliteMapper().loadAll():
 				print pdf.id,":", pdf.title
 		else:
-			for pdf in self.backend.loadAllPaged(50*page, 50):
+			for pdf in PDFSQliteMapper().loadAllPaged(50*page, 50):
 				print pdf.id,":", pdf.title
 				
 	def getBook(self, id):
-		return self.backend.loadById(id)
+		return PDFSQliteMapper().loadById(id)
 				
 	def listBooks(self, page = -1):
 		if page == -1:
-			return self.backend.loadAll()
+			return PDFSQliteMapper().loadAll()
 		else:
-			return self.backend.loadAllPaged(page*50, 50)
+			return PDFSQliteMapper().loadAllPaged(page*50, 50)
 			
 		
 			
