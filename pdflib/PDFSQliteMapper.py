@@ -22,6 +22,9 @@ class PDFSQliteMapper:
 	def __init__(self):
 		self.con = Connection(PDFSQliteMapper.filename)
 	
+	def __del__(self):
+		self.con.close()
+	
 	def createTable(self):
 		sql = '''create table pdfs(
 			id integer not null primary key autoincrement,
